@@ -141,7 +141,7 @@ if choice == "Pandas Profile":
         df = pd.read_csv(data_file)
         st.dataframe(df.head())
         #profile = ProfileReport(df)
-        st_profile_report(profile)
+        #st_profile_report(profile)
 
 
 elif choice == "Sweetviz":
