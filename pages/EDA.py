@@ -28,8 +28,8 @@ def app():
 
     # Connect to GCP MySQL database
     connection = connect_to_gcp_mysql()
-    if connection is None:
-        st.stop()  # Exit app if connection fails
+    #if connection is None:
+    #    st.stop()  # Exit app if connection fails
 
     # Get table names from database
     table_names = get_table_names(connection)
