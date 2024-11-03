@@ -6,10 +6,10 @@ import pandas as pd
 def connect_to_gcp_mysql():
     try:
         connection = mysql.connector.connect(
-            host="your_host",
-            user="your_username",
-            password="your_password",
-            database="your_database"
+            host="35.199.144.1",
+            user="gcpapp",
+            password="M#<li+=EZ?J{NRXH",
+            database="bitcoin"
         )
         return connection
     except Exception as e:
