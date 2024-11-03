@@ -2,6 +2,7 @@ import streamlit as st
 import mysql.connector  # Assuming you're using MySQL for GCP
 import pandas as pd
 
+
 # Function to connect to GCP MySQL database (replace with your credentials)
 def connect_to_gcp_mysql():
     try:
