@@ -5,11 +5,8 @@ matplotlib
 numpy
 mysql.connector  # Assuming you're using MySQL for GCP
 pandas
-urllib.error
 altair
-streamlit.hello.utils
-codecs
 pandas_profiling
-streamlit.components.v1
 streamlit_pandas_profiling
 sweetviz
+pydantic-settings
