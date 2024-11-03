@@ -23,29 +23,28 @@ def get_table_names(connection):
     table_names = [row[0] for row in cursor]
     return table_names
 
-def app():
-    st.subheader("Exploratory Data Analysis (EDA)")
+st.subheader("Exploratory Data Analysis (EDA)")
 
-    # Connect to GCP MySQL database
-    connection = connect_to_gcp_mysql()
-    #if connection is None:
-    #    st.stop()  # Exit app if connection fails
+# Connect to GCP MySQL database
+connection = connect_to_gcp_mysql()
+#if connection is None:
+#    st.stop()  # Exit app if connection fails
 
-    # Get table names from database
-    table_names = get_table_names(connection)
+# Get table names from database
+table_names = get_table_names(connection)
 
-    # Multi-select control for table selection
-    selected_tables = st.multiselect("Select Tables", table_names)
+# Multi-select control for table selection
+selected_tables = st.multiselect("Select Tables", table_names)
 
-    # Display selected table names
-    if selected_tables:
-        st.write("Selected Tables:")
-        for table in selected_tables:
-            st.write(f"- {table}")
+# Display selected table names
+if selected_tables:
+    st.write("Selected Tables:")
+    for table in selected_tables:
+        st.write(f"- {table}")
 
-        # You can further process the selected tables here (e.g., query data)
-        # ...
+    # You can further process the selected tables here (e.g., query data)
+    # ...
 
-    # Close database connection (if successfully established)
-    if connection is not None:
-        connection.close()
+# Close database connection (if successfully established)
+if connection is not None:
+    connection.close()

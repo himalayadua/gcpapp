@@ -6,7 +6,7 @@ numpy
 mysql.connector  # Assuming you're using MySQL for GCP
 pandas
 altair
-pandas_profiling
+git+https://github.com/pandas-profiling/pandas-profiling@master
 streamlit_pandas_profiling
 sweetviz
 pydantic-settings
