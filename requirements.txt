@@ -10,3 +10,5 @@ git+https://github.com/pandas-profiling/pandas-profiling@master
 streamlit_pandas_profiling
 sweetviz
 pydantic-settings
+seaborn
+matplotlib.pyplot

@@ -1,6 +1,10 @@
 import streamlit as st
 import mysql.connector  # Assuming you're using MySQL for GCP
 import pandas as pd
+from mysql.connector import Error
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 # Function to connect to GCP MySQL database (replace with your credentials)
