@@ -10,7 +10,7 @@ from streamlit.hello.utils import show_code
 
 
 import codecs
-from pandas_profiling import ProfileReport 
+#from pandas_profiling import ProfileReport 
 
 # Components Pkgs
 import streamlit.components.v1 as components
@@ -140,7 +140,7 @@ if choice == "Pandas Profile":
     if data_file is not None:
         df = pd.read_csv(data_file)
         st.dataframe(df.head())
-        profile = ProfileReport(df)
+        #profile = ProfileReport(df)
         st_profile_report(profile)
 
 
