@@ -1,5 +1,15 @@
-streamlit #add other python packages that you need google to install in order for your app to run
+streamlit # add other python packages that you need google to install in order for your app to run
 google-cloud-aiplatform #this is required
 google-cloud-logging  #this is required
 matplotlib
 numpy
+mysql.connector  # Assuming you're using MySQL for GCP
+pandas
+urllib.error
+altair
+streamlit.hello.utils
+codecs
+pandas_profiling
+streamlit.components.v1
+streamlit_pandas_profiling
+sweetviz

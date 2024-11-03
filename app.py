@@ -1,5 +1,5 @@
 import streamlit as st
-from pages import white_market_address, eda
+from pages import Whitemarket_Addr_with_AddrTimelife, EDA
 
 def main():
     # Welcome message and images
@@ -16,13 +16,13 @@ def main():
 
 
     # Page navigation using sidebar dropdown
-    page_names = ["EDA", "White Market Address"]
+    page_names = ["EDA", "Whitemarket_Addr_with_AddrTimelife"]
     selected_page = st.sidebar.selectbox("Select a Page", page_names)
 
-    if selected_page == "White Market Address":
-        white_market_address.app()
+    if selected_page == "Whitemarket_Addr_with_AddrTimelife":
+        Whitemarket_Addr_with_AddrTimelife.app()
     elif selected_page == "EDA":
-        eda.app()
+        EDA.app()
 
 if __name__ == "__main__":
     main()
