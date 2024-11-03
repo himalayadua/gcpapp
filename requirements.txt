@@ -1,3 +1,5 @@
 streamlit #add other python packages that you need google to install in order for your app to run
 google-cloud-aiplatform #this is required
 google-cloud-logging  #this is required
+matplotlib
+numpy
