@@ -32,10 +32,10 @@ def run_query(connection, query):
         cursor = connection.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
-        return result
+        return result, cursor.description
     except Error as e:
         st.error(f"Error: {e}")
-        return None
+        return None, None
 
 st.subheader("Exploratory Data Analysis (EDA)")
 
@@ -58,10 +58,10 @@ if selected_tables:
 
     # Fetch the selected table data
     query = f"SELECT * FROM {selected_tables[0]}"
-    result = run_query(connection, query)
+    result, description = run_query(connection, query)
 
     # Convert the result to a pandas DataFrame
-    df = pd.DataFrame(result, columns=[desc[0] for desc in cursor.description])
+    df = pd.DataFrame(result, columns=[desc[0] for desc in description])
 
     # 1. See the whole dataset
     st.write("### 1. Full Dataset")
