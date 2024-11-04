@@ -57,7 +57,7 @@ if selected_tables:
     #    st.write(f"- {table}")
 
     # Fetch the selected table data
-    query = f"SELECT * FROM {selected_table[0]}"
+    query = f"SELECT * FROM {selected_tables[0]}"
     result = run_query(connection, query)
 
     # Convert the result to a pandas DataFrame
