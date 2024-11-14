@@ -10,3 +10,4 @@ streamlit_pandas_profiling
 sweetviz
 pydantic-settings
 seaborn
+plotly
