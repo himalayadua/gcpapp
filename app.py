@@ -16,10 +16,10 @@ def main():
 
 
     # Page navigation using sidebar dropdown
-    page_names = ["EDA", "Whitemarket_Addr_with_AddrTimelife"]
+    page_names = ["EDA", "Dashboard"]
     selected_page = st.sidebar.selectbox("Select a Page", page_names)
 
-    if selected_page == "Whitemarket_Addr_with_AddrTimelife":
+    if selected_page == "Dashboard":
         Whitemarket_Addr_with_AddrTimelife.app()
     elif selected_page == "EDA":
         EDA.app()
