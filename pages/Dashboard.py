@@ -40,9 +40,9 @@ def load_data_from_gcp():
     if connection is None:
         return None, None, None, None, None, None, None
     
-    query_transactions = "SELECT * FROM transactions"
+    query_transactions = "SELECT * FROM txs_classes"
     query_classes = "SELECT * FROM classes"
-    query_features = "SELECT * FROM features"
+    query_features = "SELECT * FROM txs_features"
     query_txs_edgelist = "SELECT * FROM txs_edgelist"
     query_wallets = "SELECT * FROM wallets"
     query_wallet_classes = "SELECT * FROM wallet_classes"
