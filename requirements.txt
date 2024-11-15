@@ -11,3 +11,4 @@ sweetviz
 pydantic-settings
 seaborn
 plotly
+networkx
