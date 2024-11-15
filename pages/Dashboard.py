@@ -35,32 +35,55 @@ def connect_to_gcp_mysql():
 #######################
 # Load data from GCP MySQL
 
-def load_data_from_gcp():
+def load_data_from_gcp(percentage):
     connection = connect_to_gcp_mysql()
     if connection is None:
         return None, None, None, None, None, None, None
     
-    query_transactions = "SELECT * FROM txs_classes"
-    query_classes = "SELECT * FROM classes"
-    query_features = "SELECT * FROM txs_features"
-    query_txs_edgelist = "SELECT * FROM txs_edgelist"
-    query_wallets = "SELECT * FROM wallets"
-    query_wallet_classes = "SELECT * FROM wallet_classes"
-    query_wallet_features = "SELECT * FROM wallet_features"
+    #query_transactions = "SELECT * FROM txs_classes"
+    # Call the stored procedure with the selected percentage
+    # query_transactions = f"CALL GetTransactionsByPercentage({percentage})"
+
+    # query_classes = "SELECT * FROM classes"
+    # query_features = "SELECT * FROM txs_features"
+    # query_txs_edgelist = "SELECT * FROM txs_edgelist"
+    # query_wallets = "SELECT * FROM wallets"
+    # query_wallet_classes = "SELECT * FROM wallet_classes"
+    # query_wallet_features = "SELECT * FROM wallet_features"
     
-    transactions_df = pd.read_sql(query_transactions, connection)
-    classes_df = pd.read_sql(query_classes, connection)
-    features_df = pd.read_sql(query_features, connection)
-    txs_edgelist_df = pd.read_sql(query_txs_edgelist, connection)
-    wallets_df = pd.read_sql(query_wallets, connection)
-    wallet_classes_df = pd.read_sql(query_wallet_classes, connection)
-    wallet_features_df = pd.read_sql(query_wallet_features, connection)
+    # transactions_df = pd.read_sql(query_transactions, connection)
+    # classes_df = pd.read_sql(query_classes, connection)
+    # features_df = pd.read_sql(query_features, connection)
+    # txs_edgelist_df = pd.read_sql(query_txs_edgelist, connection)
+    # wallets_df = pd.read_sql(query_wallets, connection)
+    # wallet_classes_df = pd.read_sql(query_wallet_classes, connection)
+    # wallet_features_df = pd.read_sql(query_wallet_features, connection)
+
+    transactions_df = pd.read_sql(f"CALL GetDataByPercentage('txs_classes', {percentage})", connection)
+    classes_df = pd.read_sql(f"CALL GetDataByPercentage('classes', {percentage})", connection)
+    features_df = pd.read_sql(f"CALL GetDataByPercentage('txs_features', {percentage})", connection)
+    txs_edgelist_df = pd.read_sql(f"CALL GetDataByPercentage('txs_edgelist', {percentage})", connection)
+    wallets_df = pd.read_sql(f"CALL GetDataByPercentage('wallets', {percentage})", connection)
+    wallet_classes_df = pd.read_sql(f"CALL GetDataByPercentage('wallet_classes', {percentage})", connection)
+    wallet_features_df = pd.read_sql(f"CALL GetDataByPercentage('wallet_features', {percentage})", connection)
 
     connection.close()
     
     return (transactions_df, classes_df, features_df, 
             txs_edgelist_df, wallets_df, wallet_classes_df,
             wallet_features_df)
+
+
+#######################
+# Sidebar for filtering options
+
+with st.sidebar:
+    st.title('₿ Bitcoin Transactions Dashboard')
+
+    # Dropdown for selecting percentage of data to load
+    percentage_options = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    selected_percentage = st.selectbox('Select Percentage of Data to Load', percentage_options, index=1)
+
 
 # Load the data from GCP MySQL
 (transactions_df, classes_df, features_df,
