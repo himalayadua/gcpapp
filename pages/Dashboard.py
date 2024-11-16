@@ -59,7 +59,7 @@ def load_data_from_gcp(percentage):
     # wallet_classes_df = pd.read_sql(query_wallet_classes, connection)
     # wallet_features_df = pd.read_sql(query_wallet_features, connection)
 
-    transactions_df = pd.read_sql(f"CALL GetDataByPercentage('txs_classes', {percentage})", connection)
+    transactions_df = pd.read_sql(f"CALL GetDataByPercentage('Transactions', {percentage})", connection)
     classes_df = pd.read_sql(f"CALL GetDataByPercentage('classes', {percentage})", connection)
     features_df = pd.read_sql(f"CALL GetDataByPercentage('txs_features', {percentage})", connection)
     txs_edgelist_df = pd.read_sql(f"CALL GetDataByPercentage('txs_edgelist', {percentage})", connection)
