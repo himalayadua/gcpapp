@@ -88,7 +88,7 @@ with st.sidebar:
 # Load the data from GCP MySQL
 (transactions_df, classes_df, features_df,
  txs_edgelist_df, wallets_df, wallet_classes_df,
- wallet_features_df) = load_data_from_gcp()
+ wallet_features_df) = load_data_from_gcp(selected_percentage)
 
 if transactions_df is None:
     st.stop()  # Stop execution if data could not be loaded
