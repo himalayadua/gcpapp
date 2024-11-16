@@ -35,10 +35,33 @@ def connect_to_gcp_mysql():
 #######################
 # Load data from GCP MySQL
 
+def execute_stored_procedure(connection, procedure_name, table_name, percentage):
+    cursor = connection.cursor(buffered=True)
+    cursor.execute(f"CALL {procedure_name}('{table_name}', {percentage})", multi=True)
+    df = pd.DataFrame(cursor.fetchall())
+    return df
+
+
 def load_data_from_gcp(percentage):
     connection = connect_to_gcp_mysql()
     if connection is None:
         return None, None, None, None, None, None, None
+
+    # Call the custom function to get DataFrames
+    transactions_df = execute_stored_procedure(connection, "GetDataByPercentage", "Transactions", percentage)
+    classes_df = execute_stored_procedure(connection, "GetDataByPercentage", "classes", percentage)
+
+    features_df = execute_stored_procedure(connection, "GetDataByPercentage", "txs_features", percentage)
+
+    txs_edgelist_df = execute_stored_procedure(connection, "GetDataByPercentage", "txs_edgelist", percentage)
+
+    wallets_df = execute_stored_procedure(connection, "GetDataByPercentage", "wallets", percentage)
+
+    wallet_classes_df = execute_stored_procedure(connection, "GetDataByPercentage", "wallet_classes", percentage)
+
+    wallet_features_df = execute_stored_procedure(connection, "GetDataByPercentage", "wallet_features", percentage)
+
+
     
     #query_transactions = "SELECT * FROM txs_classes"
     # Call the stored procedure with the selected percentage
@@ -59,13 +82,13 @@ def load_data_from_gcp(percentage):
     # wallet_classes_df = pd.read_sql(query_wallet_classes, connection)
     # wallet_features_df = pd.read_sql(query_wallet_features, connection)
 
-    transactions_df = pd.read_sql(f"CALL GetDataByPercentage('Transactions', {percentage})", connection)
-    classes_df = pd.read_sql(f"CALL GetDataByPercentage('classes', {percentage})", connection)
-    features_df = pd.read_sql(f"CALL GetDataByPercentage('txs_features', {percentage})", connection)
-    txs_edgelist_df = pd.read_sql(f"CALL GetDataByPercentage('txs_edgelist', {percentage})", connection)
-    wallets_df = pd.read_sql(f"CALL GetDataByPercentage('wallets', {percentage})", connection)
-    wallet_classes_df = pd.read_sql(f"CALL GetDataByPercentage('wallet_classes', {percentage})", connection)
-    wallet_features_df = pd.read_sql(f"CALL GetDataByPercentage('wallet_features', {percentage})", connection)
+    # transactions_df = pd.read_sql(f"CALL GetDataByPercentage('Transactions', {percentage})", connection)
+    # classes_df = pd.read_sql(f"CALL GetDataByPercentage('classes', {percentage})", connection)
+    # features_df = pd.read_sql(f"CALL GetDataByPercentage('txs_features', {percentage})", connection)
+    # txs_edgelist_df = pd.read_sql(f"CALL GetDataByPercentage('txs_edgelist', {percentage})", connection)
+    # wallets_df = pd.read_sql(f"CALL GetDataByPercentage('wallets', {percentage})", connection)
+    # wallet_classes_df = pd.read_sql(f"CALL GetDataByPercentage('wallet_classes', {percentage})", connection)
+    # wallet_features_df = pd.read_sql(f"CALL GetDataByPercentage('wallet_features', {percentage})", connection)
 
     connection.close()
     
