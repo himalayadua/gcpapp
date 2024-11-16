@@ -37,7 +37,7 @@ def connect_to_gcp_mysql():
 
 def execute_stored_procedure(connection, procedure_name, table_name, percentage):
     cursor = connection.cursor(buffered=True)
-    cursor.execute(f"CALL {procedure_name}('{table_name}', {percentage})", multi=True)
+    cursor.execute(f"CALL {procedure_name}('{table_name}', {percentage})")
     df = pd.DataFrame(cursor.fetchall())
     return df
 
