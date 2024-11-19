@@ -11,10 +11,7 @@ import seaborn as sns
 def connect_to_gcp_mysql():
     try:
         connection = mysql.connector.connect(
-            host="35.199.144.1",
-            user="gcpapp",
-            password="M#<li+=EZ?J{NRXH",
-            database="bitcoin"
+            
         )
         return connection
     except Exception as e:
