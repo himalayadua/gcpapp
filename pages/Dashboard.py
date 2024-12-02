@@ -6,6 +6,8 @@ import plotly.express as px
 import networkx as nx
 import matplotlib.pyplot as plt
 import mysql.connector
+from dotenv import load_dotenv
+import os
 
 #######################
 # Page configuration
@@ -18,11 +20,22 @@ st.set_page_config(
 alt.themes.enable("dark")
 
 #######################
+
+load_dotenv()
+
+MYSQL_HOST = os.getenv('MYSQL_HOST')
+MYSQL_USER = os.getenv('MYSQL_USER')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+
 # Function to connect to GCP MySQL
 def connect_to_gcp_mysql():
     try:
         connection = mysql.connector.connect(
-            
+            host="35.199.144.1",
+            user="gcpapp",
+            password="M#<li+=EZ?J{NRXH",
+            database="bitcoin"
         )
         return connection
     except Exception as e:

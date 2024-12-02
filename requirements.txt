@@ -12,3 +12,5 @@ pydantic-settings
 seaborn
 plotly
 networkx
+python-dotenv
+bcrypt
