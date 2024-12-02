@@ -175,6 +175,22 @@ def load_data_from_gcp(table, percentage):
     return (transactions_df)
 
 @st.cache_data # Apply caching to data loading function
+def load_filtered_data_from_gcp(table, filter_condition):
+    # Connect to your GCP MySQL database
+    connection = connect_to_gcp_mysql()
+    if connection is None:
+        return None
+    
+    # Construct the query with the specified filter condition
+    query = f"SELECT * FROM {table} WHERE {filter_condition}"
+    
+    # Execute the query and load the data into a DataFrame
+    df = pd.read_sql(query, connection)
+    connection.close()
+    
+    return df
+
+@st.cache_data # Apply caching to data loading function
 def GetTop10FrequentTxids():
     connection = connect_to_gcp_mysql()
     if connection is None:
@@ -293,19 +309,97 @@ def app():
     # #  wallet_features_df
     #  ) 
     
-    transactions_df = load_data_from_gcp('Transactions',selected_percentage)
+    # transactions_df = load_data_from_gcp('Transactions',selected_percentage)
 
     classes_df = load_data_from_gcp('classes',100)
-    features_df = load_data_from_gcp('txs_features',selected_percentage)
-    txs_edgelist_df = load_data_from_gcp('txs_edgelist',selected_percentage)
-    wallets_df = load_data_from_gcp('wallets',selected_percentage)
+    # features_df = load_data_from_gcp('txs_features',selected_percentage)
+    # txs_edgelist_df = load_data_from_gcp('txs_edgelist',selected_percentage)
+    # wallets_df = load_data_from_gcp('wallets',selected_percentage)
     wallet_classes_df = load_data_from_gcp('wallet_classes',100)
-    wallet_features_df = load_data_from_gcp('wallets_features',selected_percentage)
-    TxAddr_edgelist_df = load_data_from_gcp('TxAddr_edgelist',selected_percentage)
-    Transaction_details_df = load_data_from_gcp('Transaction_details',selected_percentage)
-    Addr_Vol_Combined_df = load_data_from_gcp('Addr_Vol_Combined',selected_percentage)
-    AddrTx_edgelist_df = load_data_from_gcp('AddrTx_edgelist',selected_percentage)
-    AddrAddr_edgelist_df = load_data_from_gcp('AddrAddr_edgelist',selected_percentage)
+    # wallet_features_df = load_data_from_gcp('wallets_features',selected_percentage)
+    # TxAddr_edgelist_df = load_data_from_gcp('TxAddr_edgelist',selected_percentage)
+    # Transaction_details_df = load_data_from_gcp('Transaction_details',selected_percentage)
+    # Addr_Vol_Combined_df = load_data_from_gcp('Addr_Vol_Combined',selected_percentage)
+    # AddrTx_edgelist_df = load_data_from_gcp('AddrTx_edgelist',selected_percentage)
+    # AddrAddr_edgelist_df = load_data_from_gcp('AddrAddr_edgelist',selected_percentage)
+
+    # Load the data from GCP MySQL with the selected percentage
+    transactions_df = load_data_from_gcp('Transactions', selected_percentage)
+
+    # Ensure transactions_df is not None before proceeding
+    if transactions_df is not None and not transactions_df.empty:
+        # Get the list of txids from transactions_df
+        txid_list = transactions_df['txId'].tolist()
+
+        # Load features_df filtered by txid in transactions_df
+        # features_df = load_filtered_data_from_gcp('txs_features')  # Load all features
+        # features_df = features_df[features_df['txId'].isin(txid_list)]  # Filter by txid
+        features_df = load_filtered_data_from_gcp('txs_features', f'txId IN ({",".join(map(str, txid_list))})')
+
+
+        # Load txs_edgelist_df filtered by txid in transactions_df
+        # txs_edgelist_df = load_data_from_gcp('txs_edgelist')  # Load all edgelist
+        # txs_edgelist_df = txs_edgelist_df[(txs_edgelist_df['txId1'].isin(txid_list)) | 
+        #                                 (txs_edgelist_df['txId2'].isin(txid_list))]  # Filter by txid
+        txs_edgelist_df = load_filtered_data_from_gcp('txs_edgelist', f'txId1 IN ({",".join(map(str, txid_list))}) OR txId2 IN ({",".join(map(str, txid_list))})')
+
+
+        # Load TxAddr_edgelist_df filtered by txid in transactions_df
+        # TxAddr_edgelist_df = load_data_from_gcp('TxAddr_edgelist')  # Load all edgelist
+        # TxAddr_edgelist_df = TxAddr_edgelist_df[TxAddr_edgelist_df['txId'].isin(txid_list)]  # Filter by txid
+        TxAddr_edgelist_df = load_filtered_data_from_gcp('TxAddr_edgelist', f'txId IN ({",".join(map(str, txid_list))})')
+
+
+        # Load Transaction_details_df filtered by txid in transactions_df
+        # Transaction_details_df = load_data_from_gcp('Transaction_details')  # Load all details
+        # Transaction_details_df = Transaction_details_df[Transaction_details_df['txId'].isin(txid_list)]  # Filter by txid
+        Transaction_details_df = load_filtered_data_from_gcp('Transaction_details', f'txId IN ({",".join(map(str, txid_list))})')
+
+
+        # Load Addr_Vol_Combined_df filtered by txid in transactions_df
+        # Addr_Vol_Combined_df = load_data_from_gcp('Addr_Vol_Combined')  # Load all volume data
+        # Addr_Vol_Combined_df = Addr_Vol_Combined_df[Addr_Vol_Combined_df['txId'].isin(txid_list)]  # Filter by txid
+        Addr_Vol_Combined_df = load_filtered_data_from_gcp('Addr_Vol_Combined', f'txId IN ({",".join(map(str, txid_list))})')
+
+
+        # Load AddrTx_edgelist_df filtered by txid in transactions_df
+        # AddrTx_edgelist_df = load_data_from_gcp('AddrTx_edgelist')  # Load all edgelist
+        # AddrTx_edgelist_df = AddrTx_edgelist_df[AddrTx_edgelist_df['txId'].isin(txid_list)]  # Filter by txid
+        AddrTx_edgelist_df = load_filtered_data_from_gcp('AddrTx_edgelist', f'txId IN ({",".join(map(str, txid_list))})')
+
+        # Now fetch AddrAddr_edgelist_df based on addresses in Addr_Vol_Combined_df and AddrTx_edgelist_df
+        input_addresses = AddrTx_edgelist_df['input_address'].unique()
+        output_addresses = TxAddr_edgelist_df['output_address'].unique()
+        combined_addresses = set(input_addresses).union(set(output_addresses))
+
+        # AddrAddr_edgelist_df = load_data_from_gcp('AddrAddr_edgelist')  # Load all edgelist
+        # AddrAddr_edgelist_df = AddrAddr_edgelist_df[
+        #     AddrAddr_edgelist_df['input_address'].isin(combined_addresses) | 
+        #     AddrAddr_edgelist_df['output_address'].isin(combined_addresses)
+        # ]
+        addraddr_filter_condition = f'input_address IN ({",".join(map(repr, combined_addresses))}) OR output_address IN ({",".join(map(repr, combined_addresses))})'
+
+        # Load filtered AddrAddr_edgelist_df using the new function
+        AddrAddr_edgelist_df = load_filtered_data_from_gcp('AddrAddr_edgelist', addraddr_filter_condition)
+
+
+        # Fetch wallets_df based on addresses in AddrAddr_edgelist_df
+        wallet_addresses = AddrAddr_edgelist_df['input_address'].unique().tolist() + AddrAddr_edgelist_df['output_address'].unique().tolist()
+        # wallets_df = load_data_from_gcp('wallets')  # Load all wallets
+        # wallets_df = wallets_df[wallets_df['address'].isin(wallet_addresses)]  # Filter by address
+        wallets_filter_condition = f'address IN ({",".join(map(repr, wallet_addresses))})'
+        # Load filtered wallets_df using the new function
+        wallets_df = load_filtered_data_from_gcp('wallets', wallets_filter_condition)
+
+
+        # Finally, load wallet_features_df filtered by addresses in wallets_df
+        wallet_feature_addresses = wallets_df['address'].tolist()
+        # wallet_features_df = load_data_from_gcp('wallets_features', selected_percentage)  # Load features
+        # wallet_features_df = wallet_features_df[wallet_features_df['address'].isin(wallet_feature_addresses)]  # Filter by address
+        wallet_features_filter_condition = f'address IN ({",".join(map(repr, wallet_feature_addresses))})'
+
+        # Load filtered wallet_features_df using the new function
+        wallet_features_df = load_filtered_data_from_gcp('wallets_features', wallet_features_filter_condition)
 
     # Input_AddrTx_Vol_Combined
     # Output_TxAddr_Vol_Combined
@@ -538,6 +632,21 @@ def app():
         st.markdown(f"### Count Transactions by Class")
         st.dataframe(TransactionsByClass)
 
+        class_names = TransactionsByClass['name']
+        class_counts = TransactionsByClass['count']
+
+        # Create a bar plot
+        plt.figure(figsize=(10, 6))
+        plt.bar(class_names, class_counts, color=['orange', 'green', 'red'])
+        plt.xlabel('Class')
+        plt.ylabel('Count')
+        plt.title('Count of Transactions by Class')
+        plt.xticks(rotation=45)  # Rotate x-axis labels if necessary
+        plt.grid(axis='y')
+
+        # Show the plot
+        st.pyplot(plt)
+
         st.markdown('#### Top Active Illicit Address')
         df_selected_year_sorted = MostTransactedIllicitAddresses()
         st.dataframe(df_selected_year_sorted,
@@ -573,9 +682,12 @@ def app():
         selected_date_dt = pd.to_datetime(selected_date)
         # Step 3: Get the transactions for the selected date
         transactions_on_date = Addr_Vol_Combined_df[Addr_Vol_Combined_df['date'] == selected_date_dt]
+        print(transactions_on_date)
+        print("###############################")
 
         # Get the addresses involved in transactions on that date
         addresses = TxAddr_edgelist_df[TxAddr_edgelist_df['txId'].isin(transactions_on_date['txId'])]
+        # print(addresses)
 
         # Create a graph from the addresses
         G = nx.from_pandas_edgelist(addresses, 'txId', 'output_address')
