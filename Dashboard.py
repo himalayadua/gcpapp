@@ -875,3 +875,4 @@ def app():
 # Call the app function to run the dashboard logic
 if __name__ == "__main__":
     app()
+    

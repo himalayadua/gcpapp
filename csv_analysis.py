@@ -311,11 +311,11 @@ def app():
             else:
                 st.write("No numeric columns available for correlation analysis.")
 
-            # Chart 3: Box plot
-            plt.figure(figsize=(10, 5))
-            sns.boxplot(data=st.session_state.merged_data, x=selected_csv_column, y=selected_table_column)
-            plt.title("Box Plot")
-            st.pyplot(plt)
+            # # Chart 3: Box plot
+            # plt.figure(figsize=(10, 5))
+            # sns.boxplot(data=st.session_state.merged_data, x=selected_csv_column, y=selected_table_column)
+            # plt.title("Box Plot")
+            # st.pyplot(plt)
 
             # Chart 4: Histogram
             col = st.columns((2, 8), gap='medium')
@@ -339,11 +339,11 @@ def app():
                 plt.legend()
                 st.pyplot(plt)
 
-            # Chart 5: Line plot
-            plt.figure(figsize=(10, 5))
-            sns.lineplot(data=st.session_state.merged_data, x=selected_csv_column, y=selected_table_column)
-            plt.title("Line Plot")
-            st.pyplot(plt)           
+            # # Chart 5: Line plot
+            # plt.figure(figsize=(10, 5))
+            # sns.lineplot(data=st.session_state.merged_data, x=selected_csv_column, y=selected_table_column)
+            # plt.title("Line Plot")
+            # st.pyplot(plt)           
 
         # Close the database connection
         connection.close()

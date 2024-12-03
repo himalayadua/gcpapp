@@ -27,36 +27,123 @@ def connect_to_gcp_mysql():
         st.error(f"Connection error: {e}")
         return None
 
-@st.cache_data
+# @st.cache_data
+# def load_data_from_gcp(table, percentage):
+#     connection = connect_to_gcp_mysql()
+#     if connection is None:
+#         return None
+
+#     cursor = connection.cursor()
+#     stored_proc_call = f"SELECT * FROM {table}"
+#     cursor.execute(stored_proc_call)
+#     results = cursor.fetchall()
+#     column_names = [desc[0] for desc in cursor.description]
+#     df = pd.DataFrame(results, columns=column_names)
+#     connection.close()
+#     return df
+
 def load_data_from_gcp(table, percentage):
     connection = connect_to_gcp_mysql()
     if connection is None:
         return None
 
+    
     cursor = connection.cursor()
-    stored_proc_call = f"SELECT * FROM {table}"
-    cursor.execute(stored_proc_call)
-    results = cursor.fetchall()
-    column_names = [desc[0] for desc in cursor.description]
-    df = pd.DataFrame(results, columns=column_names)
+    # print(cursor)
+    stored_proc_call = "CALL GetDataByPercentage(%s, %s)"
+    for result in cursor.execute(stored_proc_call, (table, percentage), multi=True):
+        if result.with_rows:
+            results = result.fetchall()
+            column_names = [desc[0] for desc in result.description]
+            transactions_df = pd.DataFrame(results, columns=column_names)
+            return (transactions_df)
+   
     connection.close()
+    
+    return (transactions_df)
+
+# @st.cache_data # Apply caching to data loading function
+def load_filtered_data_from_gcp(table, filter_condition):
+    # Connect to your GCP MySQL database
+    connection = connect_to_gcp_mysql()
+    if connection is None:
+        return None
+    
+    # Construct the query with the specified filter condition
+    query = f"SELECT * FROM {table} WHERE {filter_condition}"
+    print(f"############################### SELECT * FROM {table}")
+    
+    # Execute the query and load the data into a DataFrame
+    df = pd.read_sql(query, connection)
+    connection.close()
+    
+    return df
+
+# @st.cache_data # Apply caching to data loading function
+def load_filtered_data_from_gcpLimit(table, filter_condition):
+    # Connect to your GCP MySQL database
+    connection = connect_to_gcp_mysql()
+    if connection is None:
+        return None
+    
+    # Construct the query with the specified filter condition
+    query = f"SELECT * FROM {table} WHERE {filter_condition} LIMIT 50000"
+    print(f"############################### SELECT * FROM {table} LIMIT")
+    
+    # Execute the query and load the data into a DataFrame
+    df = pd.read_sql(query, connection)
+    connection.close()
+    
     return df
 
 def app():
     st.title("Illicit Transactions Overview")
 
     # Load data
-    transactions_df = load_data_from_gcp('Transactions', 100)
-    classes_df = load_data_from_gcp('classes', 100)
-    txs_edgelist_df = load_data_from_gcp('txs_edgelist', 100)
-    TxAddr_edgelist_df = load_data_from_gcp('TxAddr_edgelist', 100)
-    AddrTx_edgelist_df = load_data_from_gcp('AddrTx_edgelist', 100)
-    Addr_Vol_Combined_df = load_data_from_gcp('Addr_Vol_Combined', 100)
-    Transaction_details_df = load_data_from_gcp('Transaction_details', 100) 
+    percentage_options = 2
+    classes_df = load_data_from_gcp('classes',100)
+    wallet_classes_df = load_data_from_gcp('wallet_classes',100)
+    transactions_df = load_data_from_gcp('Transactions', percentage_options)
+    # transactions_df = load_data_from_gcp('Transactions', 100)
+    # classes_df = load_data_from_gcp('classes', 100)
+    if transactions_df is not None and not transactions_df.empty:
+        # Get the list of txids from transactions_df
+        txid_list = transactions_df['txId'].tolist()
 
+        txs_edgelist_df = load_filtered_data_from_gcp('txs_edgelist', f'txId1 IN ({",".join(map(str, txid_list))}) OR txId2 IN ({",".join(map(str, txid_list))})')
+        print("############################### loaded txs_edgelist_df")
+        print(len(txs_edgelist_df))
+
+        TxAddr_edgelist_df = load_filtered_data_from_gcpLimit('TxAddr_edgelist', f'txId IN ({",".join(map(str, txid_list))})')
+        print("############################### loaded TxAddr_edgelist_df")
+        print(len(TxAddr_edgelist_df))
+
+        Addr_Vol_Combined_df = load_filtered_data_from_gcpLimit('Addr_Vol_Combined', f'txId IN ({",".join(map(str, txid_list))})')
+        print("############################### loaded Addr_Vol_Combined_df")
+        print(len(Addr_Vol_Combined_df))
+
+        AddrTx_edgelist_df = load_filtered_data_from_gcp('AddrTx_edgelist', f'txId IN ({",".join(map(str, txid_list))})')
+        print("############################### loaded AddrTx_edgelist_df")
+        print(len(AddrTx_edgelist_df))
+
+    # txs_edgelist_df = load_data_from_gcp('txs_edgelist', 100)
+    # TxAddr_edgelist_df = load_data_from_gcp('TxAddr_edgelist', 100)
+    # AddrTx_edgelist_df = load_data_from_gcp('AddrTx_edgelist', 100)
+    # Addr_Vol_Combined_df = load_data_from_gcp('Addr_Vol_Combined', 100)
+    # print(Addr_Vol_Combined_df.head())
+    # print("####### Addr_Vol_Combined_df")
+    Transaction_details_df = load_data_from_gcp('Transaction_details', 100) 
+    print(Transaction_details_df)
+    print("####### Transaction_details_df")
+    
     # Filter for illicit transactions
     illicit_classes = classes_df[classes_df['name'] == 'illicit']
     illicit_txids = transactions_df[transactions_df['class'].isin(illicit_classes['class'])]
+
+    # # Add a session state to keep track of the previous selected txId
+    # if 'previous_txid' not in st.session_state:
+    #     st.session_state.previous_txid = None
+
 
     col1, col2 = st.columns(2)
 
@@ -98,13 +185,32 @@ def app():
 
     # User input for notes
     st.subheader("Add Your Notes")
-    
-    # Check for existing description
-    existing_record = Transaction_details_df[Transaction_details_df['txId'] == selected_txid]
+    # existing_record = Transaction_details_df[Transaction_details_df['txId'] == selected_txid]
+    # if not existing_record.empty:
+    #     description = existing_record.iloc[0]['description']  # Pre-fill with existing description
+    # else:
+    #     description = ""
+    # if st.session_state.previous_txid != selected_txid:
+    #     # If it has changed, reset the description
+    #     st.session_state.previous_txid = selected_txid
+    #     description = ""  # Reset the description
+    # else:
+        # Check for existing description
+    existing_record = Transaction_details_df[Transaction_details_df['txId'] == int(selected_txid)]
+    print(f"----->existing_record {existing_record}")
+    print(f"----->selected_txid {selected_txid}")
     if not existing_record.empty:
         description = existing_record.iloc[0]['description']  # Pre-fill with existing description
     else:
         description = ""
+
+    
+    # Check for existing description
+    # existing_record = Transaction_details_df[Transaction_details_df['txId'] == selected_txid]
+    # if not existing_record.empty:
+    #     description = existing_record.iloc[0]['description']  # Pre-fill with existing description
+    # else:
+    #     description = ""
 
     # Text area for description
     new_description = st.text_area("Description", value=description)
@@ -153,8 +259,9 @@ def app():
             cursor.close()
             connection.close()
             st.success("Description deleted successfully!")
+            description = ""
         else:
             st.warning("No description found to delete.")
-            
+
 if __name__ == "__main__":
     app()
