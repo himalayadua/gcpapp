@@ -176,7 +176,7 @@ def app():
 
     # Show relationship with Addr_Vol_Combined_df
     st.subheader("Relationship with Address Volume Combined Data")
-    addr_vol_data = Addr_Vol_Combined_df[Addr_Vol_Combined_df['txId'] == selected_txid]
+    addr_vol_data = Addr_Vol_Combined_df[Addr_Vol_Combined_df['txID'] == selected_txid]
 
     if not addr_vol_data.empty:
         st.dataframe(addr_vol_data)
@@ -197,7 +197,7 @@ def app():
     # else:
         # Check for existing description
     existing_record = Transaction_details_df[Transaction_details_df['txId'] == int(selected_txid)]
-    
+
     print(f"----->existing_record {existing_record}")
     print(f"----->selected_txid {selected_txid}")
     if not existing_record.empty:
