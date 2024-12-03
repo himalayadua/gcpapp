@@ -197,6 +197,7 @@ def app():
     # else:
         # Check for existing description
     existing_record = Transaction_details_df[Transaction_details_df['txId'] == int(selected_txid)]
+    
     print(f"----->existing_record {existing_record}")
     print(f"----->selected_txid {selected_txid}")
     if not existing_record.empty:
