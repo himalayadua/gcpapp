@@ -72,6 +72,109 @@ st.markdown("""
     transform: translateX(-50%);
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* DASHBOARD PADDING */
+div.block-container.css-z5fcl4.egzxvld4 {
+    width: 100%;
+    min-width: auto;
+    max-width: initial;
+    padding-left: 5rem;
+    padding-right: 5rem;
+    padding-top: 15px;
+    padding-bottom: 40px;
+}
+
+/* GLOBAL FONT CHANGE */
+html, body, [class*="css"] {
+    font-family: 'Space Grotesk'; 
+}
+
+.st-ae {
+    font-family: 'Space Grotesk';
+}
+
+/* CONTAINER CSS */
+[data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlock"] {
+    border: 1px groove #52546a;
+    border-radius: 10px;
+    padding-left: 25px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    box-shadow: -6px 8px 20px 1px #00000052;
+}
+
+/* CUSTOM MARKDOWN CLASSES */
+.dashboard_title {
+    font-size: 20px; 
+    font-family: 'Space Grotesk';
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: left;
+    padding-bottom: 35px;
+}
+
+
+.price_details {
+    font-size: 30px; 
+    font-family: 'Space Grotesk';
+    color: #f6f6f6;
+    font-weight: 900;
+    text-align: left;
+    line-height: 1;
+    padding-bottom: 10px;
+}
+
+.btc_text {
+    font-size: 14px; 
+    font-family: 'Space Grotesk';
+    color: #f7931a;
+    font-weight: bold;
+    text-align: left;
+    line-height: 0.2;
+    padding-top: 10px;
+}
+
+.eth_text {
+    font-size: 14px; 
+    font-family: 'Space Grotesk';
+    color: #a1a1a1;
+    font-weight: bold;
+    text-align: left;
+    line-height: 0.2;
+    padding-top: 10px;
+}
+
+.xmr_text {
+    font-size: 14px; 
+    font-family: 'Space Grotesk';
+    color: #ff6b08;
+    font-weight: bold;
+    text-align: left;
+    line-height: 0.2;
+    padding-top: 10px;
+}
+
+.sol_text {
+    font-size: 14px; 
+    font-family: 'Space Grotesk';
+    color: #807af4;
+    font-weight: bold;
+    text-align: left;
+    line-height: 0.2;
+    padding-top: 10px;
+}
+
+.xrp_text {
+    font-size: 14px; 
+    font-family: 'Space Grotesk';
+    color: #01acf1;
+    font-weight: bold;
+    text-align: left;
+    line-height: 0.2;
+    padding-top: 10px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -227,6 +330,23 @@ def GetTop10FrequentTxids():
     
     return (transactions_df)
 
+@st.cache_data # Apply caching to data loading function
+def load_BTC_legends():
+    # Connect to your GCP MySQL database
+    connection = connect_to_gcp_mysql()
+    if connection is None:
+        return None
+    
+    # Construct the query with the specified filter condition
+    query = f"SELECT max(out_BTC_max) 	,min(in_BTC_max)    ,max(num_output_addresses)    ,max(num_input_addresses)    ,max(out_BTC_total) FROM bitcoin.txs_features;"
+    print(f"############################### load_BTC_legends")
+     
+    # Execute the query and load the data into a DataFrame
+    df = pd.read_sql(query, connection)
+    connection.close()
+    
+    return df
+
 # @st.cache_data # Apply caching to data loading function
 def GetTopTxByClass(selected_class):
     connection = connect_to_gcp_mysql()
@@ -327,6 +447,48 @@ def app():
     # #  wallet_features_df
     #  ) 
     
+
+    btc_legends = load_BTC_legends()
+    max_out_BTC_max = btc_legends['max(out_BTC_max)'].iloc[0]
+    min_in_BTC_max = btc_legends['min(in_BTC_max)'].iloc[0]
+    max_num_output_addresses = btc_legends['max(num_output_addresses)'].iloc[0]
+    max_num_input_addresses = btc_legends['max(num_input_addresses)'].iloc[0]
+    max_out_BTC_total = btc_legends['max(out_BTC_total)'].iloc[0]
+
+            
+    title_col, emp_col, btc_col, eth_col, xmr_col, sol_col, xrp_col = st.columns([1,0.2,1,1,1,1,1])
+
+    with title_col:
+        st.markdown('<p class="dashboard_title">Crypto<br>Dashboard</p>', unsafe_allow_html = True)
+
+    with btc_col:
+        with st.container():
+            btc_price = max_out_BTC_max
+            st.markdown(f'<p class="btc_text">Max Sent BTC<br></p><p class="price_details">{btc_price}</p>', unsafe_allow_html = True)
+
+    with eth_col:
+        with st.container():
+            eth_price = min_in_BTC_max
+            st.markdown(f'<p class="eth_text">Min Received BTC<br></p><p class="price_details">{eth_price}</p>', unsafe_allow_html = True)
+
+    with xmr_col:
+        with st.container():
+            xmr_price = max_num_output_addresses
+            st.markdown(f'<p class="xmr_text">Max Receiver Count<br></p><p class="price_details">{xmr_price}</p>', unsafe_allow_html = True)
+
+    with sol_col:
+        with st.container():
+            sol_price = max_num_input_addresses
+            st.markdown(f'<p class="sol_text">Max Sender Count<br></p><p class="price_details">{sol_price}</p>', unsafe_allow_html = True)
+
+    with xrp_col:
+        with st.container():
+            xrp_price = max_out_BTC_total
+            st.markdown(f'<p class="xrp_text">Max Total BTC Sent<br></p><p class="price_details">{xrp_price}</p>', unsafe_allow_html = True)
+
+
+
+
     # transactions_df = load_data_from_gcp('Transactions',selected_percentage)
 
     classes_df = load_data_from_gcp('classes',100)
