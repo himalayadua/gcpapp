@@ -67,7 +67,7 @@ def get_column_data_type(table_name, column_name):
         # column_type = result[0]
         # print(f"Column Type for {table_name}.{column_name}: {column_type}")
         # print(f"############################")
-        column_type = result[0].decode('utf-8')
+        column_type = result[0]
     
         # Map MySQL data types to user-friendly strings
         if column_type in ['int', 'bigint', 'smallint', 'tinyint']:
