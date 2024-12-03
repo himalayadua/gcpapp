@@ -183,6 +183,24 @@ def load_filtered_data_from_gcp(table, filter_condition):
     
     # Construct the query with the specified filter condition
     query = f"SELECT * FROM {table} WHERE {filter_condition}"
+    print(f"############################### SELECT * FROM {table}")
+    
+    # Execute the query and load the data into a DataFrame
+    df = pd.read_sql(query, connection)
+    connection.close()
+    
+    return df
+
+@st.cache_data # Apply caching to data loading function
+def load_filtered_data_from_gcpLimit(table, filter_condition):
+    # Connect to your GCP MySQL database
+    connection = connect_to_gcp_mysql()
+    if connection is None:
+        return None
+    
+    # Construct the query with the specified filter condition
+    query = f"SELECT * FROM {table} WHERE {filter_condition} LIMIT 15000"
+    print(f"############################### SELECT * FROM {table} LIMIT")
     
     # Execute the query and load the data into a DataFrame
     df = pd.read_sql(query, connection)
@@ -325,6 +343,8 @@ def app():
 
     # Load the data from GCP MySQL with the selected percentage
     transactions_df = load_data_from_gcp('Transactions', selected_percentage)
+    print("############################### loaded transactions_df")
+    print(len(transactions_df))
 
     # Ensure transactions_df is not None before proceeding
     if transactions_df is not None and not transactions_df.empty:
@@ -335,37 +355,44 @@ def app():
         # features_df = load_filtered_data_from_gcp('txs_features')  # Load all features
         # features_df = features_df[features_df['txId'].isin(txid_list)]  # Filter by txid
         features_df = load_filtered_data_from_gcp('txs_features', f'txId IN ({",".join(map(str, txid_list))})')
-
+        print("############################### loaded features_df")
+        print(len(features_df))
 
         # Load txs_edgelist_df filtered by txid in transactions_df
         # txs_edgelist_df = load_data_from_gcp('txs_edgelist')  # Load all edgelist
         # txs_edgelist_df = txs_edgelist_df[(txs_edgelist_df['txId1'].isin(txid_list)) | 
         #                                 (txs_edgelist_df['txId2'].isin(txid_list))]  # Filter by txid
         txs_edgelist_df = load_filtered_data_from_gcp('txs_edgelist', f'txId1 IN ({",".join(map(str, txid_list))}) OR txId2 IN ({",".join(map(str, txid_list))})')
-
+        print("############################### loaded txs_edgelist_df")
+        print(len(txs_edgelist_df))
 
         # Load TxAddr_edgelist_df filtered by txid in transactions_df
         # TxAddr_edgelist_df = load_data_from_gcp('TxAddr_edgelist')  # Load all edgelist
         # TxAddr_edgelist_df = TxAddr_edgelist_df[TxAddr_edgelist_df['txId'].isin(txid_list)]  # Filter by txid
-        TxAddr_edgelist_df = load_filtered_data_from_gcp('TxAddr_edgelist', f'txId IN ({",".join(map(str, txid_list))})')
-
+        TxAddr_edgelist_df = load_filtered_data_from_gcpLimit('TxAddr_edgelist', f'txId IN ({",".join(map(str, txid_list))})')
+        print("############################### loaded TxAddr_edgelist_df")
+        print(len(TxAddr_edgelist_df))
 
         # Load Transaction_details_df filtered by txid in transactions_df
         # Transaction_details_df = load_data_from_gcp('Transaction_details')  # Load all details
         # Transaction_details_df = Transaction_details_df[Transaction_details_df['txId'].isin(txid_list)]  # Filter by txid
         Transaction_details_df = load_filtered_data_from_gcp('Transaction_details', f'txId IN ({",".join(map(str, txid_list))})')
-
+        print("############################### loaded Transaction_details_df")
+        print(len(Transaction_details_df))
 
         # Load Addr_Vol_Combined_df filtered by txid in transactions_df
         # Addr_Vol_Combined_df = load_data_from_gcp('Addr_Vol_Combined')  # Load all volume data
         # Addr_Vol_Combined_df = Addr_Vol_Combined_df[Addr_Vol_Combined_df['txId'].isin(txid_list)]  # Filter by txid
-        Addr_Vol_Combined_df = load_filtered_data_from_gcp('Addr_Vol_Combined', f'txId IN ({",".join(map(str, txid_list))})')
-
+        Addr_Vol_Combined_df = load_filtered_data_from_gcpLimit('Addr_Vol_Combined', f'txId IN ({",".join(map(str, txid_list))})')
+        print("############################### loaded Addr_Vol_Combined_df")
+        print(len(Addr_Vol_Combined_df))
 
         # Load AddrTx_edgelist_df filtered by txid in transactions_df
         # AddrTx_edgelist_df = load_data_from_gcp('AddrTx_edgelist')  # Load all edgelist
         # AddrTx_edgelist_df = AddrTx_edgelist_df[AddrTx_edgelist_df['txId'].isin(txid_list)]  # Filter by txid
         AddrTx_edgelist_df = load_filtered_data_from_gcp('AddrTx_edgelist', f'txId IN ({",".join(map(str, txid_list))})')
+        print("############################### loaded AddrTx_edgelist_df")
+        print(len(AddrTx_edgelist_df))
 
         # Now fetch AddrAddr_edgelist_df based on addresses in Addr_Vol_Combined_df and AddrTx_edgelist_df
         input_addresses = AddrTx_edgelist_df['input_address'].unique()
@@ -378,10 +405,11 @@ def app():
         #     AddrAddr_edgelist_df['output_address'].isin(combined_addresses)
         # ]
         addraddr_filter_condition = f'input_address IN ({",".join(map(repr, combined_addresses))}) OR output_address IN ({",".join(map(repr, combined_addresses))})'
-
+        
         # Load filtered AddrAddr_edgelist_df using the new function
-        AddrAddr_edgelist_df = load_filtered_data_from_gcp('AddrAddr_edgelist', addraddr_filter_condition)
-
+        AddrAddr_edgelist_df = load_filtered_data_from_gcpLimit('AddrAddr_edgelist', addraddr_filter_condition)
+        print("############################### loaded AddrAddr_edgelist_df")
+        print(len(AddrAddr_edgelist_df))
 
         # Fetch wallets_df based on addresses in AddrAddr_edgelist_df
         wallet_addresses = AddrAddr_edgelist_df['input_address'].unique().tolist() + AddrAddr_edgelist_df['output_address'].unique().tolist()
@@ -389,8 +417,9 @@ def app():
         # wallets_df = wallets_df[wallets_df['address'].isin(wallet_addresses)]  # Filter by address
         wallets_filter_condition = f'address IN ({",".join(map(repr, wallet_addresses))})'
         # Load filtered wallets_df using the new function
-        wallets_df = load_filtered_data_from_gcp('wallets', wallets_filter_condition)
-
+        wallets_df = load_filtered_data_from_gcpLimit('wallets', wallets_filter_condition)
+        print("############################### loaded wallets_df")
+        print(len(wallets_df))
 
         # Finally, load wallet_features_df filtered by addresses in wallets_df
         wallet_feature_addresses = wallets_df['address'].tolist()
@@ -399,90 +428,20 @@ def app():
         wallet_features_filter_condition = f'address IN ({",".join(map(repr, wallet_feature_addresses))})'
 
         # Load filtered wallet_features_df using the new function
-        wallet_features_df = load_filtered_data_from_gcp('wallets_features', wallet_features_filter_condition)
-
+        wallet_features_df = load_filtered_data_from_gcpLimit('wallets_features', wallet_features_filter_condition)
+        print("############################### loaded wallet_features_df")
+        print(len(wallet_features_df))
     # Input_AddrTx_Vol_Combined
     # Output_TxAddr_Vol_Combined
     # Metadata_Licit_Class2_Combined
     # Metadata_Illicit_Class1_Combined
 
-    with st.sidebar:
-        # st.title('₿ Bitcoin Transactions Dashboard')
-
-        
-
-        # # Step 1: Count occurrences in both txId1 and txId2
-        # txid1_counts = txs_edgelist_df['txId1'].value_counts()
-        # txid2_counts = txs_edgelist_df['txId2'].value_counts()
-
-        # # Step 2: Combine counts from both columns
-        # total_txid_counts = txid1_counts.add(txid2_counts, fill_value=0)
-
-        # # Step 3: Sort by count and get top 10 most frequent txIds
-        # top_10_txids = total_txid_counts.nlargest(10)
-        
-        top_10_txids = GetTop10FrequentTxids()
-        TransactionsByClass = CountTransactionsByClass()
-
-        # Fetch the results into a pandas DataFrame
-        # toptxid_df = pd.DataFrame(mycursor.fetchall(), columns=['txid', 'total_count'])
-
-        # stored_proc_call = "CALL GetTop10FrequentTxids()"
-        # for result in cursor.execute(stored_proc_call, multi=True):
-
-        #     if result.with_rows:
-
-        #         results = result.fetchall()
-
-        #         column_names = [desc[0] for desc in result.description]
-
-        #         top_10_txids = pd.DataFrame(results, columns=column_names)
-
-        # Call the stored procedure
-        #cursor.execute("CALL GetTop10FrequentTxids()", multi=True)
-
-        # Fetch the results into a pandas DataFrame
-        #top_10_txids = pd.DataFrame(cursor.fetchall(), columns=['txid', 'total_count'])
-
-
         
 
     
 
     
-    #######################
-    # Visualizing Transaction Network using NetworkX
-
-    def visualize_transaction_network(tx_id, txs_edgelist):
-        G = nx.Graph()
-
-        # Add nodes for transactions involved in the selected transaction network
-        G.add_node(tx_id, label='Transaction', color='blue')
-
-        # Add edges from txs_edgelist (transaction-to-transaction relationships)
-        tx_edges = txs_edgelist[(txs_edgelist['txId1'] == tx_id) | (txs_edgelist['txId2'] == tx_id)]
-        
-        for _, row in tx_edges.iterrows():
-            G.add_edge(row['txId1'], row['txId2'], color='blue')
-
-        pos = nx.spring_layout(G)  # Define layout for graph visualization
-
-        plt.figure(figsize=(10, 8))
-        
-        colors = [G[u][v]['color'] for u, v in G.edges()]
-        
-        nx.draw(G, pos, with_labels=True,
-                node_color=[G.nodes[n]['color'] for n in G.nodes()],
-                edge_color=colors,
-                node_size=500,
-                font_size=10,
-                font_color='white',
-                font_weight='bold',
-                width=2)
-        
-        plt.title(f"Transaction Network Visualization for Transaction {tx_id}")
-        
-        st.pyplot(plt)
+  
 
     #######################
     # Dashboard Main Panel
@@ -549,6 +508,7 @@ def app():
         uk_count = 0
         # print(TransactionsByClass)
         # Extract the relevant counts
+        TransactionsByClass = CountTransactionsByClass()
         illicit_row = TransactionsByClass[TransactionsByClass['name'] == 'illicit']
         licit_row = TransactionsByClass[TransactionsByClass['name'] == 'licit']
         uk_row = TransactionsByClass[TransactionsByClass['name'] == 'unknown']
@@ -666,61 +626,37 @@ def app():
                     )
 
     
-    # Create two columns
-    col1, col2 = st.columns(2)
-
-    # Column 1: Place the dropdowns for selected_class and selected_txId
-    with col1:
-        top_dates = Addr_Vol_Combined_df.groupby('date')['total_transactions'].sum().nlargest(10).reset_index()
-        top_dates['date'] = pd.to_datetime(top_dates['date'])  # Ensure datetime format
     
-        # Step 2: Create a dropdown for the top 10 dates
-        selected_date = st.selectbox('Select a date from Top active dates:', top_dates['date'].dt.strftime('%Y-%m-%d'))
-
-    with col2:
-        st.markdown(f"### Maximum transaction activity")
-        selected_date_dt = pd.to_datetime(selected_date)
-        # Step 3: Get the transactions for the selected date
-        transactions_on_date = Addr_Vol_Combined_df[Addr_Vol_Combined_df['date'] == selected_date_dt]
-        print(transactions_on_date)
-        print("###############################")
-
-        # Get the addresses involved in transactions on that date
-        addresses = TxAddr_edgelist_df[TxAddr_edgelist_df['txId'].isin(transactions_on_date['txId'])]
-        # print(addresses)
-
-        # Create a graph from the addresses
-        G = nx.from_pandas_edgelist(addresses, 'txId', 'output_address')
-
-        # Step 4: Draw the graph
-        plt.figure(figsize=(12, 8))
-        pos = nx.spring_layout(G)  # positions for all nodes
-        nx.draw(G, pos, with_labels=True, node_size=500, node_color='skyblue', font_size=10, font_color='black', font_weight='bold', edge_color='gray')
-        plt.title(f'Address Connections on {selected_date}')
-        plt.axis('off')
-
-        # Step 5: Show the plot in Streamlit
-        st.pyplot(plt)
 
 
 
     # Create two columns
-    col1, col2 = st.columns(2)
+    col = st.columns((2, 9), gap='medium')
 
-    # Column 1: Place the dropdowns for selected_class and selected_txId
-    with col1:
+    with col[0]:
         # Select a transaction ID to explore
         txId_list = list(classes_df['name'].unique())
         selected_class = st.selectbox('Select a Class', txId_list, index=0)
+        class_mapping = {
+            'illicit': 1,
+            'licit': 2,
+            'unknown': 3
+        }
+        mapped_class = class_mapping.get(selected_class)
 
         # Merge transaction data with class names and features based on txId and class
         transactions_merged = pd.merge(transactions_df, classes_df, on='class', how='left')
         transactions_merged = pd.merge(transactions_merged, features_df, on='txId', how='left')
+        # print(transactions_merged.head())
+        # print(f"---------> transactions_merged ")
 
         # Filter data for the selected transaction ID
-        selected_tx_data = transactions_merged[transactions_merged['class'] == selected_class]
-    with col2:
+        selected_tx_data = transactions_merged[transactions_merged['class'] == mapped_class]
+        # print(f"---------> selected_tx_data = {selected_tx_data}")
+    with col[1]:
         st.markdown(f"### Transaction with max in_BTC_max")
+        print("############################### Transaction with max in_BTC_max")
+        # print(len(max_in_btc_transaction))
         #st.dataframe(selected_tx_data)
         max_in_btc_transaction = GetTopTxByClass(selected_class)
         # Step 4: Find the transaction with the maximum in_BTC_max value
@@ -730,58 +666,39 @@ def app():
         else:
             st.write("No data available for the selected class.")
 
-    selected_txId = st.selectbox('Top 10 Transaction Id', top_10_txids, index=0)
-    st.markdown("### Transaction BTC Flow")
-    # Select only numeric columns (e.g., 'in_BTC_total' and 'out_BTC_total')
-    numeric_columns = selected_tx_data.select_dtypes(include='number').columns
+    # Create two columns
+    col = st.columns((2, 9), gap='medium')
 
-    # Ensure that only numeric data is passed to Plotly
-    transaction_plot = px.bar(
-        selected_tx_data,
-        x='txId', 
-        y=numeric_columns,  # Pass only numeric columns here
-        labels={'value': 'BTC Amount', 'variable': 'Direction'},
-        title=f'BTC In/Out for Transaction {selected_txId}'
-    )
-    transaction_plot.update_layout(template='plotly_dark')
-    st.plotly_chart(transaction_plot, use_container_width=True)
+    with col[0]:
+        # top_10_txids = GetTop10FrequentTxids()
+        # # Step 1: Count occurrences of txId1
+        # txid1_counts = txs_edgelist_df['txId1'].value_counts().reset_index()
+        # txid1_counts.columns = ['txid', 'count']
 
-    st.markdown("### Wallet Activity Over Time")
+        # # Step 2: Count occurrences of txId2
+        # txid2_counts = txs_edgelist_df['txId2'].value_counts().reset_index()
+        # txid2_counts.columns = ['txid', 'count']
 
-    st.markdown(f"### Top 10 Wallets for {selected_txId}")
-    GetTop10WalletsByTxid = GetTop10WalletsByTxid(selected_txId)
-    st.dataframe(GetTop10WalletsByTxid)
-    #######################
-    # Data Processing
-    # Find input addresses from AddrTx_edgelist_df
-    input_addresses = AddrTx_edgelist_df[AddrTx_edgelist_df['txId'] == selected_txId]['input_address']
+        # # Step 3: Combine both counts
+        # combined_counts = pd.concat([txid1_counts, txid2_counts])
 
-    # Find output addresses from TxAddr_edgelist_df
-    output_addresses = TxAddr_edgelist_df[TxAddr_edgelist_df['txId'] == selected_txId]['output_address']
+        # # Step 4: Group by txid and sum counts
+        # total_counts = combined_counts.groupby('txid').sum().reset_index()
 
-    # Combine input and output addresses into a single list or DataFrame
-    selected_address = pd.concat([input_addresses, output_addresses]).unique()
+        # # Step 5: Sort by total_count in descending order and limit to top 10
+        # top_10_txids = total_counts.sort_values(by='count', ascending=False).head(10)
+        top_10_txids = max_in_btc_transaction['txId']
 
+        
 
-    # Filter wallet data for the selected wallet address
-    # selected_wallet_data = wallets_df[wallets_df['address'] == selected_address]
-    # selected_wallet_features = wallet_features_df[wallet_features_df['address'] == selected_address]
-    selected_wallet_data = wallets_df[wallets_df['address'].isin(selected_address)]
-    selected_wallet_features = wallet_features_df[wallet_features_df['address'].isin(selected_address)]
+        selected_txId = st.selectbox('Top 10 Transaction Id', top_10_txids, index=0)
+    with col[1]:
+        st.markdown(f"### Top 10 Wallets for {selected_txId}")
+        GetTop10WalletsByTxid = GetTop10WalletsByTxid(selected_txId)
+        st.dataframe(GetTop10WalletsByTxid)
 
 
-    wallet_activity_plot = px.line(selected_wallet_features,
-                                x='Time', y='total_txs',
-                                title=f'Wallet Activity Over Time for {selected_address}',
-                                labels={'total_txs': 'Total Transactions'})
-    wallet_activity_plot.update_layout(template='plotly_dark')
-    st.plotly_chart(wallet_activity_plot, use_container_width=True)
-
-    #######################
-    # Visualize Transaction Network
-
-    st.markdown("### Transaction Network Visualization")
-    visualize_transaction_network(selected_txId, txs_edgelist_df)
+    
 
     #######################
     # Additional Information Section

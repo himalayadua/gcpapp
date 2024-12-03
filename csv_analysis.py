@@ -4,7 +4,7 @@ import mysql.connector
 import matplotlib.pyplot as plt
 import seaborn as sns
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, inspect
+# from sqlalchemy import create_engine, inspect
 import os
 
 
